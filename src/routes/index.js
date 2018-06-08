@@ -17,18 +17,35 @@ var headersPost = function(ra, senha){
 
 // url de index
 router.get('/', function (req, res, next) {
-    res.send('Tela inicial');
+    var data = [];
+    var nomeAluno = req.session.nomeAluno;
+    //res.send('Tela inicial');
+
+    request({
+        url: 'http://localhost:3000/api/certificado/1/' + nomeAluno.replace(/ /g,'-').toLowerCase(),
+        headers: headersPost(req.body.ra, req.body.senha),
+        method: 'GET'
+        },
+        function (err, resp, body) {
+            if (!err && resp.statusCode == 200){
+                data = JSON.parse(body);
+            }
+        });
+
+    res.render('index', {nome : nomeAluno, data : data});
 });
 
 // url de logout
 router.get('/logout',function (req, res, next) {
     delete req.session.authenticated ;
+    delete req.session.nomeAluno;
     res.redirect('/login');
 });
 
 // url de login GET
 router.get('/login',function (req, res, next) {
-    res.send('Tela de login');
+    //res.send('Tela de login');
+    res.render('login', {err : 0});
 });
 // url de login POST
 router.post('/login', function (req, res, next){
@@ -38,6 +55,10 @@ router.post('/login', function (req, res, next){
         method: 'POST'
         },
         function (err, resp, body) {
+            if(body.match(/error/)){
+                res.render('login', {err : 1});
+                return;
+            }
             if (!err && resp.statusCode == 200){
                 body = JSON.parse(body);
                 auth = body.authAluno;
@@ -52,16 +73,24 @@ router.post('/login', function (req, res, next){
                             b = JSON.parse(b);
                             
                             req.session.authenticated = true;
-                            req.session.nome = b.nomeAluno;
-
-                            res.send(b);
-                            //res.render('../view/index',{nome : b.nomeAluno});
+                            req.session.nomeAluno = b.nomeAluno;
+                            //res.send(b);
+                            res.redirect('/');
                         }
                     }
                 );
             }
         }
     );
+    
+});
+
+// url incluir certificados GET
+router.get('/incluir-certificado', function (req, res, next) {
+    
+});
+// url incluir certificado POST
+router.post('/incluir-certificado', function (req, res, next) {
     
 });
 
