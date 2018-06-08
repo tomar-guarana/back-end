@@ -1,8 +1,54 @@
 const express = require('express');
+const firebase = require('../firebase-admin');
 const router = express.Router();
 
-router.get('/', function (req, res, next) {
-    res.send('API');
+function getFromNome(id, db, nm = null) {
+  var arrayNome = [];
+  if(nm && nm != null){
+    nm = nm.replace(/-/g,' ').toUpperCase();
+  }
+
+  //for(eventdb in db) {
+    for(item in db['certificado']){
+        // /if(db['certificado'][item].aprovado == id){
+          if(nm && db['certificado'][item].nome === nm)
+            arrayNome.push(db['certificado'][item]);
+          else if(nm == null)
+            arrayNome.push(db['certificado'][item]);
+        //}
+    }
+  //}
+
+  return arrayNome;
+}
+
+router.get('/certificado/:id', function (req, res, next) {
+    var id = req.params.id;
+    
+    firebase.once('value', function(snapshot) {
+        var data = snapshot.val();
+        res.send(getFromNome(id, data));
+      }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+      });
+});
+
+router.get('/certificado/:id/:nome', function (req, res, next) {
+    var nome = req.params.nome;
+    var id = req.params.id;
+    
+    firebase.once('value', function(snapshot) {
+        var data = snapshot.val();
+        var dataMod = getFromNome(id, data, nome);
+        res.render('index', {'data' : dataMod } );
+        //res.send(dataMod);
+      }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+      });
+});
+
+router.all('*', function (req, res, next) {
+    res.redirect('/');
 });
 
 module.exports = router;
