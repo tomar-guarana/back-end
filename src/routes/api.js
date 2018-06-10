@@ -9,12 +9,15 @@ function getFromNome(id, db, nm = null) {
   }
 
   for(item in db['certificado']){
-      if(db['certificado'][item].aprovado == id){
-        if(nm && db['certificado'][item].nome === nm)
+      //if(db['certificado'][item].aprovado == id){
+        if(nm && db['certificado'][item].nome === nm){
+          db['certificado'][item].id = item
           arrayNome.push(db['certificado'][item]);
-        else if(nm == null)
+        }else if(nm == null){
+          db['certificado'][item].id = item
           arrayNome.push(db['certificado'][item]);
-      }
+        }
+      //}
   }
 
   return arrayNome;
@@ -43,6 +46,15 @@ router.get('/certificado/:id/:nome', function (req, res, next) {
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
       });
+});
+
+router.post('/certificado/update/:id', function (req, res, next) {
+  var id = req.params.id;
+  console.log(req.body);
+  firebase.child('certificado/'+id).update(
+    req.body
+  );
+  res.status(200).send('OK');
 });
 
 router.all('*', function (req, res, next) {
