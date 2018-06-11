@@ -9,7 +9,7 @@ function getFromNome(id, db, nm = null) {
   }
 
   for(item in db['certificado']){
-      //if(db['certificado'][item].aprovado == id){
+      if(db['certificado'][item].aprovado == id || (id == 0 && !db['certificado'][item].aprovado)){
         if(nm && db['certificado'][item].nome === nm){
           db['certificado'][item].id = item
           arrayNome.push(db['certificado'][item]);
@@ -17,7 +17,7 @@ function getFromNome(id, db, nm = null) {
           db['certificado'][item].id = item
           arrayNome.push(db['certificado'][item]);
         }
-      //}
+      }
   }
 
   return arrayNome;
@@ -26,7 +26,7 @@ function getFromNome(id, db, nm = null) {
 router.get('/certificado/:id', function (req, res, next) {
     var id = req.params.id;
     
-    firebase.once('value', function(snapshot) {
+    firebase.database.once('value', function(snapshot) {
         var data = snapshot.val();
         var dataMod = getFromNome(id, data);
         res.send(dataMod);
@@ -39,7 +39,7 @@ router.get('/certificado/:id/:nome', function (req, res, next) {
     var nome = req.params.nome;
     var id = req.params.id;
     
-    firebase.once('value', function(snapshot) {
+    firebase.database.once('value', function(snapshot) {
         var data = snapshot.val();
         var dataMod = getFromNome(id, data, nome);
         res.send(dataMod);
@@ -50,8 +50,16 @@ router.get('/certificado/:id/:nome', function (req, res, next) {
 
 router.post('/certificado/update/:id', function (req, res, next) {
   var id = req.params.id;
+  //console.log(req.body);
+  firebase.database.child('certificado/'+id).update(
+    req.body
+  );
+  res.status(200).send('OK');
+});
+
+router.post('/certificado/incluir', function (req, res, next) {
   console.log(req.body);
-  firebase.child('certificado/'+id).update(
+  firebase.database.child('certificado/').push().set(
     req.body
   );
   res.status(200).send('OK');

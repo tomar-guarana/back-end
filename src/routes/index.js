@@ -1,6 +1,9 @@
 const express = require('express');
 const request = require('request');
+const upload = require('express-fileupload');
 const router = express.Router();
+
+router.use(upload());
 
 var headersPost = function(ra, senha){
     return {
@@ -16,7 +19,7 @@ function getGrupo(id, data){
     for(item in data){
         if(data[item].grupo == id){
             d.push(data[item]);
-            horas += data[item].horas;
+            horas += parseInt(data[item].horas);
         }
     }
     send.certificados = d;
@@ -133,7 +136,7 @@ request({
     form: {
             grupo    : req.body.grupo,
             aprovado : (req.body.aprovado == 'on')?1:0,
-            horas    : parseInt(req.body.horas)
+            horas    : req.body.horas
         }
         },
         function (err, resp, body) {
@@ -145,11 +148,40 @@ request({
 
 // url incluir certificados GET
 router.get('/incluir-certificado', function (req, res, next) {
-    
+    res.render('incluir-certificado');
 });
 // url incluir certificado POST
 router.post('/incluir-certificado', function (req, res, next) {
-    
+    var file = req.files.arquivo;
+    var tipo = req.body.tipo;
+    var grupo = req.body.grupo;
+    var nome = req.session.nomeAluno;
+    var base = 'http://localhost:3000/view/';    
+
+    //console.log(file);
+    file.mv('./upload/'+file.name, function(err) {
+        if (err)
+          return res.status(500).send(err);
+        
+        request({
+            url: 'http://localhost:3000/api/certificado/incluir',
+            method: 'POST',
+            form: {
+                    'Certificado-href' : base + file.name,
+                    Tipo: tipo,
+                    aprovado: 0,
+                    grupo: grupo,
+                    horas: 0,
+                    nome: nome.toUpperCase()
+                }
+                },
+                function (err, resp, body) {
+                    if (!err && resp.statusCode == 200){
+                        res.redirect('incluir-certificado');                        
+                    }
+                });
+    })    
+
 });
 
 module.exports = router;

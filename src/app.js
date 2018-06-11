@@ -9,10 +9,12 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use('/view', express.static('upload'));
+
 function checkAuth (req, res, next) {
     console.log('checkAuth ' + req.url + " " + req.session.authenticated);
 
-    if(!req.url.match(/api/)){
+    if(!req.url.match(/api/) && !req.url.match(/view/)){
         if(req.session.admin == true && req.url == '/login'){
             res.redirect('/painel-adm');
             return;

@@ -7,11 +7,6 @@ admin.initializeApp({
   databaseURL: "https://gerenciador-certificados.firebaseio.com"
 });
 
-var db = admin.database();
-module.exports = db.ref("/");
-
-// ref.once("value", function(snapshot) {
-//   console.log(snapshot.val());
-// }, function (errorObject) {
-//     console.log("The read failed: " + errorObject.code);
-// });
+module.exports = {
+  database : admin.database().ref("/")
+}
